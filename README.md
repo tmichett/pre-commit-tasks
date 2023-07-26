@@ -8,6 +8,8 @@ Tasks can be run by clicking `Terminal > Run Task...` in the program menu.  All 
 
 Any time a user changes the `.pre-commit-config.yaml`, the task provider will dump its parsed cache and force a reparse the next time the user tries to select a task to run.
 
+When the pre-commit task fails, it uses a [Problem Matcher](https://code.visualstudio.com/docs/editor/tasks#_defining-a-problem-matcher) defined in the [package.json](./package.json) to determine if it can parse the pre-commit error and add it to the `PROBLEMS` panel and highlight it in the IDE.  This makes it easier to spot where pre-commit linting errors are located.
+
 ## Requirements
 
 `pre-commit-tasks` has a runtime dependency on the `yaml` NPM package for parsing of the `.pre-commit-config.yaml` file, but that will be handled for you on installation of the extension.
