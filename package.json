@@ -23,7 +23,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:workbench.action.tasks.runTask"
+		"onCommand:workbench.action.tasks.runTask",
+		"onStartupFinished"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -42,6 +43,23 @@
 						"type": "string",
 						"description": "The file to run the hook against"
 					}
+				}
+			}
+		],
+		"problemMatchers": [
+			{
+				"name": "pcmatcher",
+				"owner": "pre-commit",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"message": 4
 				}
 			}
 		],
