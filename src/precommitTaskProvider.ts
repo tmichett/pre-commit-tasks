@@ -26,7 +26,16 @@ export class PrecommitTaskProvider implements vscode.TaskProvider {
 		const task = _task.definition.task;
 		if (task) {
 			const definition: PrecommitTaskDefinition = <any>_task.definition;
-			return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, "pre-commit", new vscode.ShellExecution(`pre-commit ${definition.task}`));
+			const problemMatchers = task.problemMatchers as any;
+
+			return new vscode.Task(
+				definition,
+				_task.scope ?? vscode.TaskScope.Workspace,
+				definition.task,
+				"pre-commit",
+				new vscode.ShellExecution(`pre-commit run ${definition.task}`),
+				"$pcmatcher"
+			);
 		}
 	}
 }
@@ -82,7 +91,14 @@ async function getPrecommitTasks(): Promise<vscode.Task[]> {
 					type: "pre-commit",
 					task: taskName,
 				};
-				const task = new vscode.Task(kind, workspaceFolder, taskName, "pre-commit", new vscode.ShellExecution(`pre-commit run ${taskName}`));
+				const task = new vscode.Task(
+					kind,
+					workspaceFolder,
+					taskName,
+					"pre-commit",
+					new vscode.ShellExecution(`pre-commit run ${taskName}`),
+					"$pcmatcher"
+				);
 				task.group = vscode.TaskGroup.Test;
 				result.push(task);
 			});
