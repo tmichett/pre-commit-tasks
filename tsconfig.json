@@ -13,5 +13,9 @@
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
-	}
+	},
+	"exclude": [
+		// exclude `node_modules` to get rid of `tsc is not recognized as internal or external command` error during packaging
+		"node_modules"
+	]
 }

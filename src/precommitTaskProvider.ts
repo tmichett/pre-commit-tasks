@@ -27,15 +27,17 @@ export class PrecommitTaskProvider implements vscode.TaskProvider {
 		if (task) {
 			const definition: PrecommitTaskDefinition = <any>_task.definition;
 			const problemMatchers = task.problemMatchers as any;
-
-			return new vscode.Task(
-				definition,
-				_task.scope ?? vscode.TaskScope.Workspace,
-				definition.task,
-				"pre-commit",
-				new vscode.ShellExecution(`pre-commit run ${definition.task}`),
-				"$pcmatcher"
-			);
+			
+			if (task.definition.task !== "Run All") {  // exclude `Run All` because it got overwritten to use an incorrect command and stopped working after one use
+				return new vscode.Task(
+					definition,
+					_task.scope ?? vscode.TaskScope.Workspace,
+					definition.task,
+					"pre-commit",
+					new vscode.ShellExecution(`pre-commit run ${definition.task} --files ${vscode.window.activeTextEditor?.document.fileName}`),
+					"$pcmatcher"
+				);
+			}
 		}
 	}
 }
@@ -63,6 +65,7 @@ async function getPrecommitTasks(): Promise<vscode.Task[]> {
 	const workspaceFolders = vscode.workspace.workspaceFolders;
 	const result: vscode.Task[] = [];
 
+	
 
 	if (!workspaceFolders || workspaceFolders.length === 0) {
 		return result;
@@ -75,6 +78,15 @@ async function getPrecommitTasks(): Promise<vscode.Task[]> {
 			continue;
 		}
 
+		const taskName = "Run All";
+		const kind: PrecommitTaskDefinition = {
+			type: "pre-commit",
+			task: taskName,
+		};
+		const allTask = new vscode.Task(kind, workspaceFolder, taskName, "pre-commit", new vscode.ShellExecution(`pre-commit run --files ${vscode.window.activeTextEditor?.document.fileName}`));
+		allTask.group = vscode.TaskGroup.Test;
+		result.push(allTask);
+
 		const configFile = path.join(folderString, ".pre-commit-config.yaml");
 		if (!await pathExists(configFile)) {
 			continue;
@@ -85,35 +97,32 @@ async function getPrecommitTasks(): Promise<vscode.Task[]> {
 		commitConfig.repos.map((repo: any) => {
 			channel.appendLine(`Repo ${repo.repo} found. hook count: ${repo.hooks.length}`);
 			repo.hooks.map((hook: any) => {
-				const taskName = hook.name || hook.id;
-				channel.appendLine(`Hook ${taskName} found. Adding...`);
-				const kind: PrecommitTaskDefinition = {
-					type: "pre-commit",
-					task: taskName,
-				};
-				const task = new vscode.Task(
-					kind,
-					workspaceFolder,
-					taskName,
-					"pre-commit",
-					new vscode.ShellExecution(`pre-commit run ${taskName}`),
-					"$pcmatcher"
-				);
-				task.group = vscode.TaskGroup.Test;
-				result.push(task);
+				// If we have multiple hooks with the same ID (e.g. yamllint), we need to execute them all at once, because calling them by their names does not work, we can only run by ID.
+				// However, those that are not relevant to the file we are linting, will be skipped anyway because of include/exclude patterns defined  in `.pre-commit-config.yaml`.
+				const taskName = hook.id;
+				let previousTaskNames: string[] = [];
+				for (let task of result) {
+					previousTaskNames.push(task.definition.task);
+				}
+				if (!previousTaskNames.includes(taskName)) {
+					channel.appendLine(`Hook ${taskName} found. Adding...`);
+					const kind: PrecommitTaskDefinition = {
+						type: "pre-commit",
+						task: taskName,
+					};
+					const task = new vscode.Task(
+						kind,
+						workspaceFolder,
+						taskName,
+						"pre-commit",
+						new vscode.ShellExecution(`pre-commit run ${taskName} --files ${vscode.window.activeTextEditor?.document.fileName}`),
+						"$pcmatcher"
+					);
+					task.group = vscode.TaskGroup.Test;
+					result.push(task);
+				}
 			});
-		});
-
-		if (result.length > 0) {
-			const taskName = "Run All";
-			const kind: PrecommitTaskDefinition = {
-				type: "pre-commit",
-				task: taskName,
-			};
-			const allTask = new vscode.Task(kind, workspaceFolder, taskName, "pre-commit", new vscode.ShellExecution("pre-commit run"));
-			allTask.group = vscode.TaskGroup.Test;
-			result.push(allTask);
-		}
+		});		
 	}
 
 	channel.show(true);
