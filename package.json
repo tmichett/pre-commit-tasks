@@ -1,17 +1,17 @@
 {
 	"name": "pre-commit-tasks",
 	"displayName": "Pre-commit Tasks",
-	"description": "VS Code Extension to integrate pre-commit tasks before git commit",
-	"publisher": "cadwallion",
+	"description": "VS Code Extension integrating pre-commit to be run on currently opened file using Tasks.",
+	"publisher": "`Affirm`",
 	"license": "MIT",
-	"version": "0.2.0",
-	"homepage": "https://github.com/cadwallion/pre-commit-tasks",
+	"version": "0.2.1",
+	"homepage": "https://github.com/Affirm/pre-commit-tasks",
 	"bugs": {
-		"url": "https://github.com/cadwallion/pre-commit-tasks"
+		"url": "https://github.com/Affirm/pre-commit-tasks"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cadwallion/pre-commit-tasks.git"
+		"url": "https://github.com/Affirm/pre-commit-tasks.git"
 	},
 	"keywords": [
 		"pre-commit"

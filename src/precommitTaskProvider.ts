@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
+import { findGitRepoRoot } from './utils';
 
 export class PrecommitTaskProvider implements vscode.TaskProvider {
 	private configPromise: Thenable<vscode.Task[]> | undefined = undefined;
@@ -46,7 +47,6 @@ function pathExists(path: string): Promise<boolean> {
 	return new Promise<boolean>((resolve, _reject) => fs.exists(path, (value) => resolve(value)));
 }
 
-
 let _channel: vscode.OutputChannel;
 function getOutputChannel(): vscode.OutputChannel {
 	if (!_channel) {
@@ -62,22 +62,22 @@ interface PrecommitTaskDefinition extends vscode.TaskDefinition {
 }
 
 async function getPrecommitTasks(): Promise<vscode.Task[]> {
-	const workspaceFolders = vscode.workspace.workspaceFolders;
 	const result: vscode.Task[] = [];
 
-	
-
+	const workspaceFolders = vscode.workspace.workspaceFolders;
 	if (!workspaceFolders || workspaceFolders.length === 0) {
 		return result;
 	}
 
-	const channel = getOutputChannel();
-	for (const workspaceFolder of workspaceFolders) {
-		const folderString = workspaceFolder.uri.fsPath;
-		if (!folderString) {
-			continue;
-		}
+	const gitRoot: string | undefined = findGitRepoRoot();
+	let gitRootConfigFile: string | undefined;
+	if (gitRoot) {
+		gitRootConfigFile = path.join(gitRoot, ".pre-commit-config.yaml");
+		gitRootConfigFile = (await pathExists(gitRootConfigFile)) ? gitRootConfigFile : undefined;
+	}
 
+	// had to do this weird 1 element loop to avoid `No overload matches this call.` error
+	for (const workspaceFolder of workspaceFolders.slice(0, 1)) {
 		const taskName = "Run All";
 		const kind: PrecommitTaskDefinition = {
 			type: "pre-commit",
@@ -86,10 +86,25 @@ async function getPrecommitTasks(): Promise<vscode.Task[]> {
 		const allTask = new vscode.Task(kind, workspaceFolder, taskName, "pre-commit", new vscode.ShellExecution(`pre-commit run --files ${vscode.window.activeTextEditor?.document.fileName}`));
 		allTask.group = vscode.TaskGroup.Test;
 		result.push(allTask);
+	}
 
-		const configFile = path.join(folderString, ".pre-commit-config.yaml");
-		if (!await pathExists(configFile)) {
+	const workspaceRoot = vscode.workspace.workspaceFolders?.[0];
+
+	const channel = getOutputChannel();
+	for (const workspaceFolder of workspaceFolders) {
+		let folderString = workspaceFolder.uri.fsPath;
+		if (!folderString) {
 			continue;
+		}
+
+		let configFile = path.join(folderString, ".pre-commit-config.yaml");
+		if (!await pathExists(configFile)) {
+			if ((workspaceFolder === workspaceRoot) && gitRootConfigFile) {
+				configFile = gitRootConfigFile;
+			}
+			else {
+				continue;
+			}
 		}
 
 		const commitConfig = yaml.parse(fs.readFileSync(configFile, "utf8"));
@@ -122,7 +137,7 @@ async function getPrecommitTasks(): Promise<vscode.Task[]> {
 					result.push(task);
 				}
 			});
-		});		
+		});
 	}
 
 	channel.show(true);
