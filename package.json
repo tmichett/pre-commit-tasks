@@ -2,7 +2,7 @@
 	"name": "pre-commit-tasks",
 	"displayName": "Pre-commit Tasks",
 	"description": "VS Code Extension integrating pre-commit to be run on currently opened file using Tasks.",
-	"publisher": "`Affirm`",
+	"publisher": "Affirm",
 	"license": "MIT",
 	"version": "0.2.1",
 	"homepage": "https://github.com/Affirm/pre-commit-tasks",
