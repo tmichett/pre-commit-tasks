@@ -3,18 +3,24 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import * as strings from './strings';
-import { findGitRepoRoot } from './utils';
 
 abstract class PrecommitTaskProvider implements vscode.TaskProvider {
 	protected configPromise: Thenable<vscode.Task[]> | undefined = undefined;
 	protected abstract type: string;
 
-	constructor(workspaceRoot: string) {
-		const pattern = path.join(workspaceRoot, ".pre-commit-config.yaml");
-		const fileWatcher = vscode.workspace.createFileSystemWatcher(pattern);
-		fileWatcher.onDidChange(() => this.configPromise = undefined);
-		fileWatcher.onDidCreate(() => this.configPromise = undefined);
-		fileWatcher.onDidDelete(() => this.configPromise = undefined);
+	private gitRootConfigFile: string | undefined;
+
+	constructor(gitRoot: string) {
+		let gitRootConfigFile: string | undefined = path.join(gitRoot, ".pre-commit-config.yaml");
+		gitRootConfigFile = (fs.existsSync(gitRootConfigFile)) ? gitRootConfigFile : undefined;
+		this.gitRootConfigFile = gitRootConfigFile;
+
+		if (gitRootConfigFile) {
+			const fileWatcher = vscode.workspace.createFileSystemWatcher(gitRootConfigFile);
+			fileWatcher.onDidChange(() => this.configPromise = undefined);
+			fileWatcher.onDidCreate(() => this.configPromise = undefined);
+			fileWatcher.onDidDelete(() => this.configPromise = undefined);
+		}
 	}
 
 	public provideTasks(token: vscode.CancellationToken): vscode.ProviderResult<vscode.Task[]> | undefined {
@@ -70,22 +76,16 @@ abstract class PrecommitTaskProvider implements vscode.TaskProvider {
 		if (!workspaceFolders || workspaceFolders.length === 0) {
 			return result;
 		}
-	
-		const gitRoot: string | undefined = findGitRepoRoot();
-		let gitRootConfigFile: string | undefined;
-		if (gitRoot) {
-			gitRootConfigFile = path.join(gitRoot, ".pre-commit-config.yaml");
-			gitRootConfigFile = (await pathExists(gitRootConfigFile)) ? gitRootConfigFile : undefined;
-		}
-	
-		// had to do this weird 1 element loop to avoid `No overload matches this call.` error
+		
+		// had to do this weird 1 element loop instead of using `workspaceRoot` to avoid `No overload matches this call.` error,
+		// even though we already now at this point that there is at least one workspaceFolder
 		for (const workspaceFolder of workspaceFolders.slice(0, 1)) {
 			const allTask = this.createRunAllTask(workspaceFolder);
 			result.push(allTask);
 		}
 	
 		const workspaceRoot = vscode.workspace.workspaceFolders?.[0];
-	
+
 		let previousTaskNames: string[] = [];
 		const channel = getOutputChannel();
 		for (const workspaceFolder of workspaceFolders) {
@@ -96,8 +96,8 @@ abstract class PrecommitTaskProvider implements vscode.TaskProvider {
 	
 			let configFile = path.join(folderString, ".pre-commit-config.yaml");
 			if (!await pathExists(configFile)) {
-				if ((workspaceFolder === workspaceRoot) && gitRootConfigFile) {
-					configFile = gitRootConfigFile;
+				if ((workspaceFolder === workspaceRoot) && this.gitRootConfigFile) {
+					configFile = this.gitRootConfigFile;
 				}
 				else {
 					continue;
