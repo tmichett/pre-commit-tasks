@@ -30,24 +30,22 @@ abstract class PrecommitTaskProvider implements vscode.TaskProvider {
 		if (task) {
 			const definition: PrecommitTaskDefinition = <any>_task.definition;
 			const problemMatchers = task.problemMatchers as any;
-			
-			if (task.definition.task !== "Run All") {  // exclude `Run All` because it got overwritten to use an incorrect command and stopped working after one use
-				return new vscode.Task(
-					definition,
-					_task.scope ?? vscode.TaskScope.Workspace,
-					definition.task,
-					definition.type,
-					new vscode.ShellExecution(`pre-commit run ${definition.task} --files ${vscode.window.activeTextEditor?.document.fileName}`),
-					problemMatchers
-				);
-			}
+			return new vscode.Task(
+				definition,
+				_task.scope ?? vscode.TaskScope.Workspace,
+				definition.taskName,
+				definition.type,
+				definition.command,
+				problemMatchers
+			);
 		}
 	}
 
 	protected createTask(taskName: string, command: string, workspaceFolder: vscode.WorkspaceFolder): vscode.Task {
 		const kind: PrecommitTaskDefinition = {
 			type: this.type,
-			task: taskName,
+			taskName: taskName,
+			command: command
 		};
 		const task = new vscode.Task(
 			kind,
@@ -175,6 +173,7 @@ function getOutputChannel(): vscode.OutputChannel {
 }
 
 interface PrecommitTaskDefinition extends vscode.TaskDefinition {
-	task: string;
+	taskName: string;
+	command: string;
 	file?: string;
 }
