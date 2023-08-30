@@ -2,16 +2,16 @@
 	"name": "pre-commit-tasks",
 	"displayName": "Pre-commit Tasks",
 	"description": "VS Code Extension to integrate pre-commit tasks before git commit",
-	"publisher": "cadwallion",
+	"publisher": "Affirm",
 	"license": "MIT",
 	"version": "0.1.0",
-	"homepage": "https://github.com/cadwallion/pre-commit-tasks",
+	"homepage": "https://github.com/Affirm/pre-commit-tasks",
 	"bugs": {
-		"url": "https://github.com/cadwallion/pre-commit-tasks"
+		"url": "https://github.com/Affirm/pre-commit-tasks"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cadwallion/pre-commit-tasks.git"
+		"url": "https://github.com/Affirm/pre-commit-tasks.git"
 	},
 	"keywords": [
 		"pre-commit"
@@ -30,7 +30,19 @@
 	"contributes": {
 		"taskDefinitions": [
 			{
-				"type": "pre-commit",
+				"type": "pre-commit (on git stage)",
+				"required": [
+					"task"
+				],
+				"properties": {
+					"task": {
+						"type": "string",
+						"description": "Pre-commit hook id to run"
+					}
+				}
+			},
+			{
+				"type": "pre-commit (on current file)",
 				"required": [
 					"task"
 				],
@@ -86,7 +98,7 @@
 	"devDependencies": {
 		"@types/glob": "^7.2.0",
 		"@types/mocha": "^9.1.1",
-		"@types/node": "16.x",
+		"@types/node": "^16.18.39",
 		"@types/vscode": "^1.69.0",
 		"@typescript-eslint/eslint-plugin": "^5.30.0",
 		"@typescript-eslint/parser": "^5.30.0",

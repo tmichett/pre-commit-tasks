@@ -4,7 +4,11 @@
 
 ## Features
 
-Tasks can be run by clicking `Terminal > Run Task...` in the program menu.  All tasks will be found in the `pre-commit` task provider.  A user can either select a specific task or select `Run All` and all pre-commit hooks will be invoked.
+Tasks can be run by clicking `Terminal > Run Task...` in the program menu.  All tasks will be found in the `pre-commit (...)` task providers.  A user can either select a specific task or select `Run All` and all pre-commit hooks will be invoked.
+
+Two task providers are created for each linter: 
+- `pre-commit (on git stage)`, linting all changes staged in git (analogous to how it's run during commit)
+- `pre-commit (on current file)` linting the file opened in the active editor (regardless of changes staged in git)
 
 Any time a user changes the `.pre-commit-config.yaml`, the task provider will dump its parsed cache and force a reparse the next time the user tries to select a task to run.
 
@@ -24,6 +28,6 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-### 0.1.0
+### [0.1.0]
 
-Initial Release
+- Initial release
