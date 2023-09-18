@@ -19,6 +19,7 @@ RUN apt-get install -y \
   libasound2 \
   libxtst-dev \
   libxss1 \
+  libgbm-dev \
   xvfb \
   x11vnc \
   fluxbox \
