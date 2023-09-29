@@ -4,7 +4,7 @@
 	"description": "VS Code Extension to integrate pre-commit tasks before git commit",
 	"publisher": "Affirm",
 	"license": "BSD-3-Clause",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"homepage": "https://github.com/Affirm/pre-commit-tasks",
 	"bugs": {
 		"url": "https://github.com/Affirm/pre-commit-tasks"
