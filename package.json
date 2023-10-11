@@ -5,6 +5,14 @@
 	"publisher": "Affirm",
 	"license": "BSD-3-Clause",
 	"version": "0.2.0",
+	"homepage": "https://github.com/Affirm/pre-commit-tasks",
+	"bugs": {
+		"url": "https://github.com/Affirm/pre-commit-tasks"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Affirm/pre-commit-tasks.git"
+	},
 	"keywords": [
 		"pre-commit"
 	],
