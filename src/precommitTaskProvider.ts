@@ -146,14 +146,14 @@ export class PrecommitCurrentFileTaskProvider extends PrecommitTaskProvider {
 	type = strings.precommitCurrentFileTaskProviderType;
 
 	protected createHookTask(taskName: string, workspaceFolder: vscode.WorkspaceFolder): vscode.Task {		
-		const command = `pre-commit run ${taskName} --files ${vscode.window.activeTextEditor?.document.fileName}`;
+		const command = `pre-commit run ${taskName} --all-files ${vscode.window.activeTextEditor?.document.fileName}`;
 		const task = this.createTask(taskName, command, workspaceFolder);
 		return task;
 	}
 
 	protected createRunAllTask(workspaceFolder: vscode.WorkspaceFolder): vscode.Task {
 		const taskName = "Run All";
-		const command = `pre-commit run --files ${vscode.window.activeTextEditor?.document.fileName}`;
+		const command = `pre-commit run --all-files ${vscode.window.activeTextEditor?.document.fileName}`;
 		const task = this.createTask(taskName, command, workspaceFolder);
 		return task;
 	}
